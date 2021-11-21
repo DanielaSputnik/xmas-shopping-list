@@ -1,166 +1,85 @@
-import React, { useState, useEffect } from "react";
-import List from "./Lists";
-import Alert from "./Alert";
-import { AiOutlineGift, AiFillGift } from "react-icons/ai";
+import { useState, useEffect } from 'react';
+import { nanoid } from 'nanoid'
+import PeopleList from './PeopleList';
+import Alert from './Alert';
 
-const getLocalStorage = () => {
-  let list = localStorage.getItem("list");
-  if (list) {
-    return (list = JSON.parse(localStorage.getItem("list")));
-  } else {
-    return [];
-  }
-};
-function App() {
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [purchasedStatus, setPurchaseStatus] = useState(false);
-  const [list, setList] = useState(getLocalStorage());
-  const [isEditing, setIsEditing] = useState(false);
-  const [editID, setEditID] = useState(null);  
-  const [totalValueCount, setTotalValueCount] = useState(0);
-  const [showTotal, setShowTotal] = useState(false);
-  const [alert, setAlert] = useState({ show: false, msg: "", type: "" });
+const XmasApp = () => {
+    const [currency, setCurrency] = useState('CZK')
+    const [peopleList, setPeopleList] = useState([
+        {
+            id: 'myself01',
+            name: 'Myself'
+        }    ]);
+    const [alert, setAlert] = useState({ show: false, msg: "", type: "" });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    useEffect(() => {
+        const savedLists = JSON.parse(localStorage.getItem('myXmasPeopleList'));
+        const savedCurrency = JSON.parse(localStorage.getItem('myXmasCurrency'));
+        if (savedLists) {
+            setPeopleList(savedLists);
+        }
+        if (savedCurrency) {
+            setCurrency(savedCurrency);
+        }
+    }, []);
 
-    if (!name ) {
-      showAlert(true, "danger", "please enter a gift");
+    useEffect(() => {
+        localStorage.setItem('myXmasPeopleList', JSON.stringify(peopleList));
+    }, [peopleList])
+    useEffect(() => {
+        localStorage.setItem('myXmasCurrency', JSON.stringify(currency));
+    }, [currency])
+
+    const addPerson = (personName) => {
+        if (peopleList.find(i => i.name === personName)) {
+            showAlert(true, "danger", "Person Name Must Be Unique");
+            }
+        else {
+            showAlert(true, "success", "Person Added");
+            const newPerson = {
+                id: nanoid(),
+                name: personName,
+            };
+            const newPeopleList = [...peopleList, newPerson];
+            setPeopleList(newPeopleList);
+        }
     }
-    else if (!price || Number.isNaN(parseInt(price))) {
-      showAlert(true, "danger", "please enter correct price");
+
+    const deletePerson = (id, name) => {
+        showAlert(true, "danger", "Person Removed");
+        const newPeopleList = peopleList.filter((person) => person.id !== id);
+        localStorage.removeItem(`myXmasGiftList${name}`);
+        setPeopleList(newPeopleList);
     }
-    else if (name && isEditing && !Number.isNaN(parseInt(price))) {
-      setList(
-        list.map((item) => {
-          if (item.id === editID) {
-            return {...item, title: name, price: price};
-          }
-          return item;
-        })
-      );
-      setName("");
-      setPrice("");
-      setEditID(null);
-      setIsEditing(false);
-      showAlert(true, "success", "Changes Submited");
-    } else {
-      showAlert(true, "success", "Gift added to the list");
-      const newItem = {
-        id: new Date().getTime().toString(),
-        title: name,
-        price: price,
-      };
-      setList([...list, newItem]);
-      setName("");
-      setPrice("");
-    }
-  };
 
-  const showAlert = (show = false, type = "", msg = "") => {
-    setAlert({ show, type, msg });
-  };
+    const showAlert = (show = false, type = "", msg = "") => {
+        setAlert({ show, type, msg });
+    };
 
-  const clearList = () => {
-    showAlert(true, "danger", "List cleared");
-    setList([]);
-  };
+    const handleCurrencyChange = (e) => {
+        setCurrency(e.target.value)
+    };
 
-  const removeItem = (id) => {
-    showAlert(true, "danger", "gift removed");
-    setList(list.filter((item) => item.id !== id));
-  };
-
-  const editItem = (id) => {
-    const specificItem = list.find((item) => item.id === id);
-    setIsEditing(true);
-    setEditID(id);
-    setName(specificItem.title);
-    setPrice(specificItem.price);
-  };
-
-  const togglePurchased = (id) => {
-    const specificItem = list.find((item) => item.id === id);
-    setPurchaseStatus(specificItem.purchasedStatus = !purchasedStatus);
-  };
-
-  useEffect(() => {
-    localStorage.setItem("list", JSON.stringify(list));
-  }, [list]);
-
-  
-  const calculateTotal = () => {
-    const totalValueCount = list.reduce((total, item) => {
-      return parseInt(total) + parseInt(item.price);
-    },0);
-    setTotalValueCount(totalValueCount);
-    setShowTotal(!showTotal);
-  };
-  
-  return (
-    <section className="section-center">
-      <form className="gift-form" onSubmit={handleSubmit}>
-        <h3>Palko</h3>
-        {list.length > 0 && showTotal && (
-          <h4> Total for Palko: {totalValueCount} CZK</h4>
-        )}
-
-        {alert.show && <Alert {...alert} removeAlert={showAlert} list={list} />}
-
-        <div className="form-control">
-          <label htmlFor="giftName">
-            <input
-              type="text"
-              className="gift"
-              placeholder="Add Gift..."
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </label>
-          <label htmlFor="giftPrice">
-            <input
-              type="text"
-              className="gift"
-              placeholder="Expected Price"
-              autoFocus
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-            />
-          </label>
-          <button type="Add" className="submit-btn" title="Submit">
-            {isEditing ? "edit" : "add"}
-          </button>
-        </div>
-      </form>
-
-      {list.length > 0 && (
+    return (
         <>
-          <div className="list-header">
-            <p className="list-header-title">Gift name</p>
-            <p className="list-header-title">Price</p>
-            <p className="list-header-title">
-              Purchased &nbsp;&nbsp;&nbsp;&nbsp; Edit
-            </p>
-          </div>
-          <div className="gift-container">
-            <List
-              items={list}
-              togglePurchased={togglePurchased}
-              removeItem={removeItem}
-              editItem={editItem}
-            />
-            <button className="clear-btn" onClick={calculateTotal}>
-              Calculate Total
-            </button>
-            <button className="clear-btn" onClick={clearList}>
-              clear this gift list
-            </button>
-          </div>
+            <div className='app-header'>
+                X-MAS GIFT LISTS
+            </div>
+            <div>
+                Currency:
+                <input type="text" className='currency-selector' onChange={handleCurrencyChange} maxLength="3" placeholder={currency} />
+            </div>
+            <div className='container'>
+                {alert.show && <Alert {...alert} removeAlert={()=> showAlert()} list={peopleList} />}
+                <PeopleList
+                    people={peopleList}
+                    handleAddPerson={addPerson}
+                    handleDeletePerson={deletePerson}
+                    currency={currency}
+                />
+            </div>
         </>
-      )}
-    </section>
-  );
-}
+    );
+};
 
-export default App;
+export default XmasApp;
