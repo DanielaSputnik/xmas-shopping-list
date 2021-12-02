@@ -18,7 +18,7 @@ const PeopleList = ({ people, handleAddPerson, handleDeletePerson, currency }) =
             ))}
             <div className='add-new-person'>
                 <AddPerson handleAddPerson={handleAddPerson} />
-                </div>
+            </div>
         </div>
     );
 

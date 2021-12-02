@@ -126,6 +126,7 @@ function GiftList({ personId, person, handleDeletePerson, currency }) {
               type="text"
               className="text-input"
               placeholder="Expected Price"
+              maxLength="7"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
             />

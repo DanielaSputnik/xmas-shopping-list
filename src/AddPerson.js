@@ -13,10 +13,10 @@ const AddPerson = ({ handleAddPerson }) => {
             setPersonName('');
         }
         else {
-            setPersonName('Some Name Needed...')
+            setPersonName('Name Needed...')
             setTimeout(() => {
                 setPersonName('')
-            }, 1000);
+            }, 900);
         }
     };
 
@@ -26,7 +26,7 @@ const AddPerson = ({ handleAddPerson }) => {
                 cols="100"
                 rows="1"
                 placeholder='Add New Person'
-                maxLength="25"
+                maxLength="24"
                 value={personName}
                 onChange={handleNameChange}>
             </input>
